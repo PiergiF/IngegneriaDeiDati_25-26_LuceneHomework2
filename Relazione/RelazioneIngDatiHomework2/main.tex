@@ -1,0 +1,192 @@
+\documentclass[11pt]{article}
+
+%\usepackage{listings}
+
+%algoritmi
+%\usepackage[compatibility=false]{caption}
+%\usepackage{minted}
+
+\usepackage{algorithm} 
+\usepackage{algpseudocode}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\usepackage{comment}
+\usepackage{subcaption}
+
+\usepackage{hyperref}
+
+%New colors defined below
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+%Code listing style named "mystyle"
+\lstdefinestyle{mystyle}{
+  backgroundcolor=\color{backcolour}, commentstyle=\color{codegreen},
+  keywordstyle=\color{magenta},
+  numberstyle=\tiny\color{codegray},
+  stringstyle=\color{codepurple},
+  basicstyle=\ttfamily\footnotesize,
+  breakatwhitespace=false,         
+  breaklines=true,                 
+  captionpos=b,                    
+  keepspaces=true,                 
+  numbers=left,                    
+  numbersep=5pt,                  
+  showspaces=false,                
+  showstringspaces=false,
+  showtabs=false,                  
+  tabsize=2
+}
+
+%"mystyle" code listing set
+\lstset{style=mystyle}
+
+
+%form
+
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry} 
+\usepackage{amsmath,amsthm,amssymb,graphicx,mathtools,tikz,hyperref,multicol,cancel,enumitem,booktabs,float,pgfplots,multirow,mathrsfs,textcomp,gensymb,soul,changepage,threeparttable}
+%\usepackage[table]{xcolor}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{hyphenat}
+\hyphenation{mate-mati-ca recu-perare}
+\usetikzlibrary{positioning}
+\pgfplotsset{compat=1.14}
+
+\newcommand{\n}{\mathbb{N}}
+\newcommand{\z}{\mathbb{Z}}
+\newcommand{\q}{\mathbb{Q}}
+\newcommand{\cx}{\mathbb{C}}
+\newcommand{\real}{\mathbb{R}}
+\newcommand{\field}{\mathbb{F}}
+\newcommand{\ita}[1]{\textit{#1}}
+\newcommand{\com}[2]{#1\backslash#2}
+\newcommand{\oneton}{\{1,2,3,...,n\}}
+\newcommand{\idea}[1]{\begin{gather*}#1\end{gather*}}
+\newcommand{\ef}{\ita{f} }
+\newcommand{\eff}{\ita{f}}
+\newcommand{\proofs}[1]{\begin{proof}#1\end{proof}}
+\newcommand{\inv}[1]{#1^{-1}}
+\newcommand{\setb}[1]{\{#1\}}
+\newcommand{\en}{\ita{n }}
+\newcommand{\vbrack}[1]{\langle #1\rangle}
+\newcommand{\qRa}{\quad \Rightarrow \quad}
+\newcommand{\smaca}[1]{\textbf{\textsc{#1}}}
+
+\newenvironment{theorem}[2][Teorema]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{lemma}[2][Lemma]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{exercise}[2][Esercizio]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{proposition}[2][Proposizione]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{corollary}[2][Corollario]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+
+\hypersetup {
+    colorlinks,
+    linkcolor=blue
+}
+
+\graphicspath{{img/}}
+
+\begin{document}
+\setlength{\parindent}{0pt}
+\title{\vspace{-4em}{\large Roma Tre} \\
+    Relazione Ingegneria dei Dati}
+\author{Piergiorgio Fornaro (577925)}
+\date{03/11/2025}
+\maketitle
+
+\vspace{-2em}\par\noindent\rule{\textwidth}{0.4pt}
+\begin{center}
+    {\Large\sc Indexer e Searcher su Lucene}
+\end{center}
+\par\noindent\rule{\textwidth}{0.4pt}
+
+\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue}
+
+\section{Introduzione}
+La seguente relazione ha lo scopo di rendicontare i risultati ottenuti in seguito alla creazione di codice per sfruttare Lucene come Indexer e Searcher su un piccolo database di dati.\newline
+La versione di Lucene utilizzata è la 10.3.1, con JDK 25.0.1.\newline
+Sono stati analizzati due campi principali per ogni documento: \textbf{Nome} e \textbf{Contenuto} ed è stata realizzata una GUI per poter interagire in maniera più agevole con il motore di ricerca.
+\begin{comment}
+Sono presenti due campi principali per ogni documento:
+\begin{itemize}
+    \item \textbf{Nome}: ovvero il nome del file. L'obiettivo della ricerca su questo campo è la corrispondenza esatta ma case insensitive. A tale scopo è stato utilizzato un TextField.
+    \item \textbf{Contenuto}: ovvero ciò che è scritto dentro al file.
+    L'obiettivo della ricerca su questo campo è trovare le parole cercate o che contengono quella corrispettiva stringa al loro interno. Quest'ultima cosa è resa possibile grazie all'aggiunta del carattere speciale \textbf{*} indicante "è presente qualsiasi cosa in questo punto". É stato utilizzato l'ItalianAnalyzer di Lucene, che gestisce la lingua italiana, rimuovendo le stopwords, uniformando i caratteri ed effettuando lo stemming (riduzione di una parola alla sua forma radice) per una ricerca più robusta.
+\end{itemize}
+\end{comment}
+%É stata infine realizzata una GUI per poter interagire in maniera più agevole con il motore di ricerca.
+
+\subsection{GitHub del progetto}
+URL: \url{https://github.com/PiergiF/IngegneriaDeiDati_25-26_LuceneHomework2}
+
+
+\section{Atricolazione del progetto}
+Nella sua prima versione il progetto è scritto tutto in una classe per verificarne l'effettivo funzionamento. In futuro verrà Rifattorizzata in più classi e con l'aggiunta di test automatici e non manuali.\newline
+Il codice è così articolato:
+\begin{itemize}
+    \item Prima parte contenente la \textbf{creazione} e l'inizializzazione della \textbf{GUI}, con tutti i pulsanti e la dark mode.
+    \item Possibilità di \textbf{scelta della directory} da dove prendere i dati da indicizzare (ovviamente è presente una directory di default).
+    \item Parte di \textbf{indicizzazione} in cui vengono visti i file nella directory dei dati selezionata. Per ogni file legge ed indicizza:
+        \begin{itemize}
+            \item \textbf{Nome}: ovvero il nome del file. L'obiettivo della ricerca su questo campo è la corrispondenza esatta ma case insensitive. A tale scopo è stato utilizzato un TextField.
+            \item \textbf{Contenuto}: ovvero ciò che è scritto dentro al file. L'obiettivo della ricerca su questo campo è trovare le parole cercate o che contengono quella corrispettiva stringa al loro interno. Quest'ultima cosa è resa possibile grazie all'aggiunta del carattere speciale \textbf{*} indicante "è presente qualsiasi cosa in questo punto". É stato utilizzato l'ItalianAnalyzer di Lucene, che gestisce la lingua italiana, rimuovendo le stopwords, uniformando i caratteri ed effettuando lo stemming (riduzione di una parola alla sua forma radice) per una ricerca più robusta.
+        \end{itemize}
+        Se non è stato trovato nessun file, il problema viene segnalato all'utente. Si utilizza un IndexWriter per scrivere i documenti nell’indice. A fine indicizzazione viene riportato il tempo totale e, se selezionato, anche il tempo impiegato per ogni file. É poi possibile salvare i risultati in formato \textit{csv}. Si può ricreare l'inidice direttamente da programma, tramite apposito tasto che, se premuto, cancellerà il vecchio indice, creandone uno nuovo.
+        \item Parte di \textbf{Ricerca}, che si occupa della ricerca dei documenti indicizzati. Apre l’indice salvato su disco e utilizza un IndexSearcher per interrogare i documenti. In base al campo selezionato sa su quale campo cercare e costruisce la Query tramite un QueryParser. La query ritorna ciò che si è cercato, il numero di occorrenze, l'eventuale file di riferimento (nel caso sia un contenuto) e lo score.
+        \item Parte di \textbf{Esportazione} dei risultati ottenuti.
+        \item Parte dedicata al \textbf{Log}.
+        \item \textbf{Main} per far partire l'applicazione.
+\end{itemize}
+
+
+\section{Test}
+I test sono stati momentaneamente realizzati a mano.\newline
+Sono state effettuate query su 3 file \textit{txt}:
+\begin{itemize}
+    \item Roma.txt
+    \item Lucene.txt
+    \item Esercizi.txt
+\end{itemize}
+Query realizzate:
+\begin{itemize}
+    \item "Roma.txt" con ricerca sul nome. Risultato: Ricerca [nome]Roma.txt - Risultati: 1 - Roma.txt (score: 0,446)
+    \item "Roma.json" con ricerca sul nome. Ricerca [nome]: Roma.json - Risultati: 0
+    \item "Roma" con ricerca sul nome. Ricerca [nome]: Roma - Risultati: 0
+    \item "ROMA.TXT" con ricerca sul nome. Ricerca [nome]: ROMA.TXT - Risultati: 1 - Roma.txt (score: 0,446)
+    \item "Software" con ricerca sul contenuto.  Ricerca [contenuto]: Software - Risultati: 1 - lucene.txt (score: 0,455)
+    \item "open source" con ricerca sul contenuto.  Ricerca [contenuto]: open source - Risultati: 1 - lucene.txt (score: 0,593)
+    \item "opensource" con ricerca sul contenuto.  Ricerca [contenuto]: opensource - Risultati: 0
+    \item "finire tutti gli esercizi" con ricerca sul contenuto. Ricerca [contenuto]: finire tutti gli esercizi - Risultati: 1 - esercizi.txt (score: 1,215)
+    \item "esa*" con ricerca sul contenuto. Ricerca [contenuto]: esa* - Risultati: 1 - esercizi.txt (score: 1,000)
+    \item "Paulo Dybala" con ricerca sul contenuto. Ricerca [contenuto]: Paulo Dybala - Risultati: 1 - Roma.txt (score: 1,170)
+\end{itemize}
+
+\subsection{Tempi di indicizzazione}
+Sono stati indicizzati 3 file con i seguenti tempi:
+\begin{itemize}
+    \item Indicizzato: lucene.txt (2,1 ms)
+    \item Indicizzato: Roma.txt (0,3 ms)
+    \item Indicizzato: esercizi.txt (0,3 ms)
+\end{itemize}
+Indicizzazione completata in 0,025 secondi (3 file, 118,71 file/sec)
+
+\section{Sviluppi futuri}
+In futuro gli obiettivi sono di:
+\begin{itemize}
+    \item Rifattorizzare in più classi.
+    \item Aggiungere test automatici.
+    \item Aggiornare la relazione.
+    \item Aggiungere nuove feature.
+\end{itemize}
+\end{document}
+
